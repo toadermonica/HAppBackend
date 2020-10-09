@@ -1,4 +1,4 @@
-# HAppBackend
+# HApp
 ## Purpose of this project
 This project is a backend RESTful API solution built with NodeJs, Express (Web framewrok) and Mongoose (ORM). 
 Connects to a MongoDB database
