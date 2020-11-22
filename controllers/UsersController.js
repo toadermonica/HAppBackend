@@ -1,43 +1,38 @@
 import usersModule from '../models/UsersModule';
+import {comparePassword, hashPassword} from "../utils/AuthenticationUtil";
+import authController from "./AuthenticationController";
 class UsersController{
 
     constructor(){
         this.usersModule = usersModule.getUsers();
     }
 
-    /**************************
-     **** Non-Bulk Operations
-     **************************/
-    addNewUser(user){
-        let objToSave = new this.usersModule(user);
-        return objToSave.save();
-    }
-    updateUserValue(email, newValues){
-        return new Promise((resolve, reject) => {
-            this.usersModule.findOneAndUpdate({email: email}, {$set:{email:"toadermonica@gmail.com"}}, {new: true})
-                .then((updated, error) =>{
-                    if(error){
-                        reject(error);
-                    }
-                    resolve(updated);
-                });
-        });
+    /**
+     * Function that finds user by email
+     * Checks the current password for match
+     * Updates old password with new password
+     **/
+    updateUserPassword(email, password, newPassword){
+           return this.usersModule.findOne({email:email}).then(userValue => {
+                if(!comparePassword(password, userValue.password)){
+                    return Promise.reject("Not matching");
+                }
+                const digest = hashPassword(newPassword);
+                userValue.password = digest;
+                userValue.save();
+           });
     }
     deleteUserAccount(userEmail){
-        return new Promise((resolve, reject) => {
-            //find and return the task which we want to delete
-            this.usersModule.find({email:userEmail}, (err, obj)=>{
-                if(err || obj === null){
-                    reject(err);
-                }else{
-                    this.usersModule.deleteOne({email: userEmail}).then((deleted, err)=>{
-                        if(err)
-                            reject(err);
-                        resolve(deleted);
-                    });
-                }
-            });
-        });
+        return this.usersModule.deleteOne({email: userEmail});
+    }
+    findUserByEmail(userEmail){
+        return this.usersModule.findOne({email:userEmail});
+    }
+    updateUserRefreshToken(email, token){
+        if(!email || !token)
+            return Promise.reject(null);
+        console.log('null user is ', email);
+        return this.usersModule.findOneAndUpdate(email, { $set: { token: token } });
     }
     /************************
     *****Bulk operations*****

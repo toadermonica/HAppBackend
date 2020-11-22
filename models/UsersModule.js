@@ -9,8 +9,8 @@ class UsersModule {
     createUserSchema(){
         this.UserModule = new this.Schema({
             email:{type: String, required: true, unique: true, dropDups: true},
-            username:{type: String, required: true},
-            password:{type: String, required: true,}
+            password:{type: String, required: true},
+            token:{type: String, require: false}
         },{versionKey: false, timestamps: true});
     }
     getUsers(){
