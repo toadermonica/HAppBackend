@@ -1,4 +1,4 @@
-import {getTokens, verifyTokenAndGetUser} from "../utils/JwtToken";
+import {getTokens, verifyRefreshToken} from "../utils/JwtToken";
 import usersModule from "../models/UsersModule";
 import {comparePassword, hashPassword, isValidEmail} from "../utils/AuthenticationUtil";
 import usersController from "./UsersController";
@@ -28,7 +28,7 @@ class AuthenticationController{
 
     regenerateRefreshToken(refreshToken){
         // if ok, find user and add refresh token to db
-        const user = verifyTokenAndGetUser(refreshToken);
+        const user = verifyRefreshToken(refreshToken);
         if(!user.email) return Promise.reject(null);
         return this.usersModule.findOne({email:user.email}).then(value => {
             return getTokens(user.email).then(responseTokens => {
@@ -45,6 +45,7 @@ class AuthenticationController{
             return Promise.reject('Invalid credentials, please try again');
         }
         return getTokens(userObj.email).then(response => {
+            console.log('Response is: ', response);
             if(!response) return Promise.reject(null);
            userObj.token = response.refreshToken;
            return usersController.updateUserRefreshToken(userObj.email, userObj.token).then(res => {

@@ -29,6 +29,7 @@ usersApi.post('/register', function(req, res){
 usersApi.post('/login', function (req,res) {
     let user = req.body;
     authController.authenticateUser(user).then((response)=>{
+        console.log('Response I am sending is: ', response);
         res.status(201).send(response);
     }).catch((error) => {
         res.status(404).send(error);
@@ -69,7 +70,7 @@ usersApi.put('/changePassword', authenticateToken, function (req, res) {
         .then((updated)=>{
             res.send(updated);
         }).catch((err) =>{
-            res.status(409).send(err);
+            res.status(400).send(err);
         });
 });
 

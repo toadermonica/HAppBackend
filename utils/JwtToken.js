@@ -10,30 +10,29 @@ export async function getTokens(email){
     return ({accessToken : accessToken, refreshToken : refreshToken});
 }
 
-export function verifyTokenAndGetUser(refreshToken) {
-    return jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, function (err, user) {
-        if (err) return null;
-        return user;
-    });
+export async function generateAccessToken(payload) {
+    return Promise.resolve(jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET,{ expiresIn: '600000' }));
+}
+export async function generateRefreshToken(payload) {
+    return Promise.resolve(jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET,{expiresIn: '3 days'}));
 }
 
-export function generateAccessToken(payload) {
-    return Promise.resolve(jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '600000' }));
-}
-export function generateRefreshToken(payload) {
-    return Promise.resolve(jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET));
+export function verifyRefreshToken(refreshToken) {
+    return jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, function (err, decodedPayload) {
+        if (err) return null;
+        return decodedPayload;
+    });
 }
 
 export function authenticateToken(req, res, next) {
-    const token = req.headers['authorization'];
-    if(!token){
+    const accessToken = req.headers['authorization'];
+    if(!accessToken){
         return res.status(401).send({"error": 'Missing token'});
     }
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, user) {
-        if (err) {
-            return res.status(403).send(err);
+    jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, function (error) {
+        if (error) {
+            return res.status(400).send({error});
         }
-        req.user = user;
-        next();
     });
+    next();
 }
